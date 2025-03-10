@@ -65,6 +65,15 @@ class DataStore: ObservableObject {
         }
     }
     
+    func updateExpense(in categoryId: UUID, expenseId: UUID, amount: Double, description: String) {
+        if let categoryIndex = categories.firstIndex(where: { $0.id == categoryId }),
+           let expenseIndex = categories[categoryIndex].items.firstIndex(where: { $0.id == expenseId }) {
+            categories[categoryIndex].items[expenseIndex].amount = amount
+            categories[categoryIndex].items[expenseIndex].description = description
+            saveData()
+        }
+    }
+    
     func deleteCategory(at indexSet: IndexSet) {
         categories.remove(atOffsets: indexSet)
         saveData()
