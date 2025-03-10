@@ -50,6 +50,13 @@ class DataStore: ObservableObject {
         saveData()
     }
     
+    func updateCategoryName(id: UUID, newName: String) {
+        if let index = categories.firstIndex(where: { $0.id == id }) {
+            categories[index].name = newName
+            saveData()
+        }
+    }
+    
     func addExpense(to categoryId: UUID, amount: Double, description: String) {
         if let index = categories.firstIndex(where: { $0.id == categoryId }) {
             let newItem = ExpenseItem(amount: amount, description: description, date: Date())

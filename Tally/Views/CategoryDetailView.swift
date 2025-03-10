@@ -7,6 +7,8 @@ struct CategoryDetailView: View {
     @State private var showingAddExpense = false
     @State private var newExpenseAmount = ""
     @State private var newExpenseDescription = ""
+    @State private var showingEditCategory = false
+    @State private var editedCategoryName = ""
     
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -98,6 +100,15 @@ struct CategoryDetailView: View {
                     Label("Add Expense", systemImage: "plus")
                 }
             }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    editedCategoryName = category.name
+                    showingEditCategory = true
+                }) {
+                    Label("Edit", systemImage: "pencil")
+                }
+            }
         }
         .sheet(isPresented: $showingAddExpense) {
             NavigationView {
@@ -120,6 +131,31 @@ struct CategoryDetailView: View {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Save") {
                             saveExpense()
+                        }
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingEditCategory) {
+            NavigationView {
+                Form {
+                    Section(header: Text("Edit Category")) {
+                        TextField("Category Name", text: $editedCategoryName)
+                    }
+                }
+                .navigationTitle("Edit Category")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showingEditCategory = false
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            if !editedCategoryName.isEmpty {
+                                dataStore.updateCategoryName(id: category.id, newName: editedCategoryName)
+                                showingEditCategory = false
+                            }
                         }
                     }
                 }
