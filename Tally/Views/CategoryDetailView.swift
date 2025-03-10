@@ -91,22 +91,25 @@ struct CategoryDetailView: View {
                 Spacer()
             }
         }
-        .navigationTitle(category.name)
+        .navigationTitle("")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .principal) {
                 Button(action: {
-                    showingAddExpense = true
+                    editedCategoryName = category.name
+                    showingEditCategory = true
                 }) {
-                    Label("Add Expense", systemImage: "plus")
+                    Text(category.name)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                        .underline(color: .gray.opacity(0.3))
                 }
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    editedCategoryName = category.name
-                    showingEditCategory = true
+                    showingAddExpense = true
                 }) {
-                    Label("Edit", systemImage: "pencil")
+                    Label("Add Expense", systemImage: "plus")
                 }
             }
         }
