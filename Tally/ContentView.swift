@@ -6,81 +6,94 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @StateObject private var dataStore = DataStore()
+    @State private var showingAddCategory = false
+    @State private var newCategoryName = ""
+    
     var body: some View {
         NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+            ZStack {
+                List {
+                    ForEach(dataStore.categories) { category in
+                        NavigationLink(destination: CategoryDetailView(category: category, dataStore: dataStore)) {
+                            VStack(alignment: .leading) {
+                                Text(category.name)
+                                    .font(.headline)
+                                Text("Total: $\(String(format: "%.2f", category.total))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                    .onDelete(perform: dataStore.deleteCategory)
+                }
+                
+                if dataStore.categories.isEmpty {
+                    VStack {
+                        Text("No categories yet")
+                            .font(.headline)
+                        Text("Tap the + button to create your first category")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        
+                        Button(action: {
+                            showingAddCategory = true
+                        }) {
+                            Label("Add Category", systemImage: "plus.circle.fill")
+                                .font(.title2)
+                                .padding()
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
+            .navigationTitle("Tally")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    Button(action: {
+                        showingAddCategory = true
+                    }) {
+                        Label("Add Category", systemImage: "plus")
                     }
                 }
             }
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            .sheet(isPresented: $showingAddCategory) {
+                NavigationView {
+                    Form {
+                        Section(header: Text("New Category")) {
+                            TextField("Category Name", text: $newCategoryName)
+                        }
+                    }
+                    .navigationTitle("Add Category")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                newCategoryName = ""
+                                showingAddCategory = false
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                if !newCategoryName.isEmpty {
+                                    dataStore.addCategory(name: newCategoryName)
+                                    newCategoryName = ""
+                                    showingAddCategory = false
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
 }
