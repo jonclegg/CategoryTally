@@ -11,6 +11,8 @@ struct ContentView: View {
     @StateObject private var dataStore = DataStore()
     @State private var showingAddCategory = false
     @State private var newCategoryName = ""
+    @State private var showingQRCodeExport = false
+    @State private var showingQRCodeScanner = false
     
     var body: some View {
         NavigationView {
@@ -62,6 +64,25 @@ struct ContentView: View {
                         Label("Add Category", systemImage: "plus")
                     }
                 }
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        Button(action: {
+                            showingQRCodeExport = true
+                        }) {
+                            Label("Export Data", systemImage: "square.and.arrow.up")
+                        }
+                        .disabled(dataStore.categories.isEmpty)
+                        
+                        Button(action: {
+                            showingQRCodeScanner = true
+                        }) {
+                            Label("Import Data", systemImage: "square.and.arrow.down")
+                        }
+                    } label: {
+                        Label("Data Options", systemImage: "qrcode")
+                    }
+                }
             }
             .sheet(isPresented: $showingAddCategory) {
                 NavigationView {
@@ -89,6 +110,12 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $showingQRCodeExport) {
+                QRCodeExportView(dataStore: dataStore)
+            }
+            .sheet(isPresented: $showingQRCodeScanner) {
+                QRCodeScannerView(dataStore: dataStore)
             }
         }
     }

@@ -10,11 +10,6 @@ struct CategoryDetailView: View {
     @State private var showingEditCategory = false
     @State private var editedCategoryName = ""
     
-    @State private var showingEditExpense = false
-    @State private var selectedExpense: ExpenseItem? = nil
-    @State private var editedExpenseAmount = ""
-    @State private var editedExpenseDescription = ""
-    
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -48,32 +43,23 @@ struct CategoryDetailView: View {
             // List of expenses
             List {
                 ForEach(category.items) { item in
-                    Button(action: {
-                        selectedExpense = item
-                        editedExpenseAmount = String(format: "%.2f", item.amount)
-                        editedExpenseDescription = item.description
-                        showingEditExpense = true
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                if !item.description.isEmpty {
-                                    Text(item.description)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                }
-                                Text(dateFormatter.string(from: item.date))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                    HStack {
+                        VStack(alignment: .leading) {
+                            if !item.description.isEmpty {
+                                Text(item.description)
+                                    .font(.headline)
                             }
-                            
-                            Spacer()
-                            
-                            Text("$\(String(format: "%.2f", item.amount))")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                            Text(dateFormatter.string(from: item.date))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        .padding(.vertical, 4)
+                        
+                        Spacer()
+                        
+                        Text("$\(String(format: "%.2f", item.amount))")
+                            .font(.headline)
                     }
+                    .padding(.vertical, 4)
                 }
                 .onDelete { indexSet in
                     dataStore.deleteExpense(from: category.id, at: indexSet)
@@ -178,31 +164,6 @@ struct CategoryDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingEditExpense) {
-            NavigationView {
-                Form {
-                    Section(header: Text("Edit Expense")) {
-                        TextField("Amount", text: $editedExpenseAmount)
-                            .keyboardType(.decimalPad)
-                        
-                        TextField("Description (optional)", text: $editedExpenseDescription)
-                    }
-                }
-                .navigationTitle("Edit Expense")
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            showingEditExpense = false
-                        }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Save") {
-                            updateExpense()
-                        }
-                    }
-                }
-            }
-        }
     }
     
     private func saveExpense() {
@@ -213,16 +174,6 @@ struct CategoryDetailView: View {
         dataStore.addExpense(to: category.id, amount: amount, description: newExpenseDescription)
         resetForm()
         showingAddExpense = false
-    }
-    
-    private func updateExpense() {
-        guard let expense = selectedExpense,
-              let amount = Double(editedExpenseAmount.replacingOccurrences(of: ",", with: ".")) else {
-            return
-        }
-        
-        dataStore.updateExpense(in: category.id, expenseId: expense.id, amount: amount, description: editedExpenseDescription)
-        showingEditExpense = false
     }
     
     private func resetForm() {
