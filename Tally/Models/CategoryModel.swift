@@ -336,4 +336,118 @@ class DataStore: ObservableObject {
         let decompressedData = Data(bytes: destinationBuffer, count: Int(stream.total_out))
         return decompressedData
     }
+    
+    // MARK: - Demo Data Generation
+    
+    func generateDemoData() {
+        // Clear existing data
+        categories = []
+        
+        // Create example categories for multiple months
+        let months = ["January", "February", "March"]
+        
+        for month in months {
+            // Groceries category for each month
+            var groceriesCategory = Category(name: "\(month) Groceries")
+            groceriesCategory.items = createDemoExpenses(month: month, type: "Groceries")
+            categories.append(groceriesCategory)
+            
+            // Restaurants category for each month
+            var restaurantsCategory = Category(name: "\(month) Restaurants")
+            restaurantsCategory.items = createDemoExpenses(month: month, type: "Restaurants")
+            categories.append(restaurantsCategory)
+            
+            // Utilities category for each month
+            var utilitiesCategory = Category(name: "\(month) Utilities")
+            utilitiesCategory.items = createDemoExpenses(month: month, type: "Utilities")
+            categories.append(utilitiesCategory)
+            
+            // Transportation category for each month
+            var transportationCategory = Category(name: "\(month) Transportation")
+            transportationCategory.items = createDemoExpenses(month: month, type: "Transportation")
+            categories.append(transportationCategory)
+        }
+        
+        // Save the demo data
+        saveData()
+    }
+    
+    private func createDemoExpenses(month: String, type: String) -> [ExpenseItem] {
+        var expenses: [ExpenseItem] = []
+        
+        // Create a date formatter to generate dates in the correct month
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM d, yyyy"
+        
+        // Get the current year
+        let currentYear = Calendar.current.component(.year, from: Date())
+        
+        // Generate different expenses based on category type
+        switch type {
+        case "Groceries":
+            let stores = ["Whole Foods", "Trader Joe's", "Safeway", "Costco", "Local Market"]
+            let amounts = [45.67, 32.18, 78.92, 120.45, 25.30]
+            
+            for i in 1...5 {
+                let dayOfMonth = i * 5 // Spread out over the month: 5th, 10th, 15th, etc.
+                let dateString = "\(month) \(dayOfMonth), \(currentYear)"
+                if let date = dateFormatter.date(from: dateString) {
+                    let store = stores[i-1]
+                    let amount = amounts[i-1]
+                    let expense = ExpenseItem(amount: amount, description: store, date: date)
+                    expenses.append(expense)
+                }
+            }
+            
+        case "Restaurants":
+            let restaurants = ["Olive Garden", "Cheesecake Factory", "Local Bistro", "Sushi Place", "Pizza Night"]
+            let amounts = [35.45, 68.20, 42.75, 55.30, 28.50]
+            
+            for i in 1...5 {
+                let dayOfMonth = i * 4 + 2 // Different days: 6th, 10th, 14th, etc.
+                let dateString = "\(month) \(dayOfMonth), \(currentYear)"
+                if let date = dateFormatter.date(from: dateString) {
+                    let restaurant = restaurants[i-1]
+                    let amount = amounts[i-1]
+                    let expense = ExpenseItem(amount: amount, description: restaurant, date: date)
+                    expenses.append(expense)
+                }
+            }
+            
+        case "Utilities":
+            let utilities = ["Electricity", "Water", "Internet", "Phone", "Gas"]
+            let amounts = [85.42, 45.30, 65.99, 55.00, 38.25]
+            
+            for i in 1...5 {
+                let dayOfMonth = i * 5 + 1 // Different days
+                let dateString = "\(month) \(dayOfMonth), \(currentYear)"
+                if let date = dateFormatter.date(from: dateString) {
+                    let utility = utilities[i-1]
+                    let amount = amounts[i-1]
+                    let expense = ExpenseItem(amount: amount, description: utility, date: date)
+                    expenses.append(expense)
+                }
+            }
+            
+        case "Transportation":
+            let items = ["Gas", "Car Maintenance", "Parking", "Uber", "Public Transit"]
+            let amounts = [45.30, 120.00, 25.00, 32.45, 40.00]
+            
+            for i in 1...5 {
+                let dayOfMonth = i * 3 + 4 // Different days
+                let dateString = "\(month) \(dayOfMonth), \(currentYear)"
+                if let date = dateFormatter.date(from: dateString) {
+                    let item = items[i-1]
+                    let amount = amounts[i-1]
+                    let expense = ExpenseItem(amount: amount, description: item, date: date)
+                    expenses.append(expense)
+                }
+            }
+            
+        default:
+            break
+        }
+        
+        return expenses
+    }
 } 

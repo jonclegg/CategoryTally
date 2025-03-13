@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var newCategoryName = ""
     @State private var showingQRCodeExport = false
     @State private var showingQRCodeScanner = false
+    @State private var showingDemoDataAlert = false
     
     var body: some View {
         NavigationView {
@@ -52,6 +53,26 @@ struct ContentView: View {
                                 .background(Color.blue.opacity(0.1))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
+                    }
+                }
+                
+                // Hidden button in the bottom right corner
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Circle()
+                            .fill(Color.gray.opacity(0.1)) // Slightly visible for debugging
+                            .frame(width: 80, height: 80) // Larger touch area
+                            .contentShape(Circle())
+                            .onLongPressGesture(minimumDuration: 2.0) {
+                                showingDemoDataAlert = true
+                            }
+                            .padding()
+                            // Add a tap gesture with a print statement for debugging
+                            .onTapGesture {
+                                print("Tapped hidden button - long press for 2 seconds to activate")
+                            }
                     }
                 }
             }
@@ -116,6 +137,16 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingQRCodeScanner) {
                 QRCodeScannerView(dataStore: dataStore)
+            }
+            .alert(isPresented: $showingDemoDataAlert) {
+                Alert(
+                    title: Text("Generate Demo Data"),
+                    message: Text("This will replace all your current data with example data for demonstration purposes. This action cannot be undone."),
+                    primaryButton: .destructive(Text("Generate Demo Data")) {
+                        dataStore.generateDemoData()
+                    },
+                    secondaryButton: .cancel()
+                )
             }
         }
     }
