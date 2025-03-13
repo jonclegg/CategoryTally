@@ -184,8 +184,26 @@ class DataStore: ObservableObject {
         let scale = 10.0
         let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         
-        // Create a larger context for the QR code with white background
-        let size = CGSize(width: transformedImage.extent.width + 40, height: transformedImage.extent.height + 40)
+        // Get current date formatted as string
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        let dateString = dateFormatter.string(from: Date())
+        
+        // Create a larger context for the QR code with white background and text
+        let padding: CGFloat = 40
+        let topPadding: CGFloat = 150 // Much larger top area for prominent title and date
+        let bottomPadding: CGFloat = 40
+        
+        // Calculate width - ensure it's at least 600 points wide
+        let qrWidth: CGFloat = transformedImage.extent.width
+        let qrHeight: CGFloat = transformedImage.extent.height
+        let calculatedWidth: CGFloat = qrWidth + (padding * 2)
+        let finalWidth: CGFloat = calculatedWidth < 600 ? 600 : calculatedWidth
+        let finalHeight: CGFloat = qrHeight + topPadding + bottomPadding
+        
+        // Create the size with explicit CGFloat values
+        let size = CGSize(width: finalWidth, height: finalHeight)
+        
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
         
         if let graphicsContext = UIGraphicsGetCurrentContext() {
@@ -193,13 +211,47 @@ class DataStore: ObservableObject {
             graphicsContext.setFillColor(UIColor.white.cgColor)
             graphicsContext.fill(CGRect(origin: .zero, size: size))
             
+            // Draw a prominent colored header background
+            let headerRect = CGRect(x: 0, y: 0, width: size.width, height: topPadding)
+            graphicsContext.setFillColor(UIColor(red: 0.0, green: 0.4, blue: 0.8, alpha: 1.0).cgColor) // Bright blue
+            graphicsContext.fill(headerRect)
+            
+            // Add title at the top in large white text
+            let titleText = "CATEGORY TALLY"
+            let titleAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.boldSystemFont(ofSize: 40),
+                .foregroundColor: UIColor.white
+            ]
+            
+            // Add date below title in white text
+            let dateText = "Exported: \(dateString)"
+            let dateAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 24),
+                .foregroundColor: UIColor.white
+            ]
+            
+            let titleSize = titleText.size(withAttributes: titleAttributes)
+            let dateSize = dateText.size(withAttributes: dateAttributes)
+            
+            let titleX = (size.width - titleSize.width) / 2
+            let titleY: CGFloat = 30 // Fixed position from top
+            
+            let dateX = (size.width - dateSize.width) / 2
+            let dateY = titleY + titleSize.height + 15 // Position below title
+            
+            titleText.draw(at: CGPoint(x: titleX, y: titleY), withAttributes: titleAttributes)
+            dateText.draw(at: CGPoint(x: dateX, y: dateY), withAttributes: dateAttributes)
+            
             // Convert CIImage to CGImage using CIContext
             if let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) {
+                // Calculate QR code position
+                let qrX: CGFloat = (size.width - qrWidth) / 2
+                let qrY: CGFloat = topPadding
                 let imageRect = CGRect(
-                    x: (size.width - transformedImage.extent.width) / 2,
-                    y: (size.height - transformedImage.extent.height) / 2,
-                    width: transformedImage.extent.width,
-                    height: transformedImage.extent.height
+                    x: qrX,
+                    y: qrY,
+                    width: qrWidth,
+                    height: qrHeight
                 )
                 graphicsContext.draw(cgImage, in: imageRect)
             }
