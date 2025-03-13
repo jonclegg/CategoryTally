@@ -11,8 +11,8 @@ struct ContentView: View {
     @StateObject private var dataStore = DataStore()
     @State private var showingAddCategory = false
     @State private var newCategoryName = ""
-    @State private var showingQRCodeExport = false
-    @State private var showingQRCodeScanner = false
+    @State private var showingDataExport = false
+    @State private var showingDataImport = false
     @State private var showingDemoDataAlert = false
     
     var body: some View {
@@ -89,19 +89,19 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         Button(action: {
-                            showingQRCodeExport = true
+                            showingDataExport = true
                         }) {
                             Label("Export Data", systemImage: "square.and.arrow.up")
                         }
                         .disabled(dataStore.categories.isEmpty)
                         
                         Button(action: {
-                            showingQRCodeScanner = true
+                            showingDataImport = true
                         }) {
                             Label("Import Data", systemImage: "square.and.arrow.down")
                         }
                     } label: {
-                        Label("Data Options", systemImage: "qrcode")
+                        Label("Data Options", systemImage: "doc.text")
                     }
                 }
             }
@@ -132,11 +132,11 @@ struct ContentView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingQRCodeExport) {
-                QRCodeExportView(dataStore: dataStore)
+            .sheet(isPresented: $showingDataExport) {
+                DataExportView(dataStore: dataStore)
             }
-            .sheet(isPresented: $showingQRCodeScanner) {
-                QRCodeScannerView(dataStore: dataStore)
+            .sheet(isPresented: $showingDataImport) {
+                DataImportView(dataStore: dataStore)
             }
             .alert(isPresented: $showingDemoDataAlert) {
                 Alert(
